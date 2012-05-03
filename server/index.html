@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script src="http://dev.edo-m18.me:8081/target/target-script-min.js#test"></script>
+<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script>
+    $(function () {
+    
+        'use strict';
+
+        var data = {
+            hoge: 'hoge',
+            text: 'aaa'
+        };
+
+        $('p').click(function () {
+
+            $.ajax({
+                url: '/post',
+                type: 'post',
+                data: data
+            }).done(function (res) {
+
+                console.log(res);
+            });
+        });
+
+        ////////////////////////////////////
+
+        var cv = document.querySelector('canvas'),
+            ctx = cv.getContext('2d'),
+            img = new Image();
+
+        img.src = 'samp.jpg';
+        img.onload = function () {
+        
+            cv.width = this.width;
+            cv.height = this.height;
+            ctx.drawImage(this, 0, 0);
+
+            console.log(data);
+        };
+
+        cv.onclick = function () {
+        
+            alert('aaa');
+            console.log('hoge', cv.toDataURL());
+        };
+    });
+</script>
+</head>
+<body>
+    <p>test</p>
+    <canvas></canvas>
+</body>
+</html>

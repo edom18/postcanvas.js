@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title></title>
+</head>
+<body>
+
+    <canvas id="canvas" width="300" height="300"></canvas>
+
+<!--    <script src="samp.js"></script>-->
+    <script src="canvas2image.js"></script>
+    <script>
+
+        var cv = document.getElementById('canvas'),
+            ctx = cv.getContext('2d'),
+            cWidth = cv.width,
+            cHeight = cv.height,
+            img = new Image();
+
+
+        img.src = 'HTML5_Logo_256.png';
+        img.onload = function () {
+
+            ctx.beginPath();
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, cWidth, cHeight);
+            ctx.drawImage(img, 0, 0);
+            ctx.closePath();
+            var im = Canvas2Image.saveAsBMP(cv, true, 300, 300);
+            document.body.appendChild(im);
+        };
+
+    </script>
+</body>
+</html>
