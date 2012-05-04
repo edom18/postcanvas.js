@@ -19,6 +19,16 @@ h1 {
     font-size: 1.2em;
 }
 
+.postedImageList {}
+.postedImageList li {
+    float: left;
+    margin-right: 15px;
+    list-style: none;
+}
+.postedImageList li img {
+    box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+}
+
 #canvas {
     border: solid 1px #999;
 }

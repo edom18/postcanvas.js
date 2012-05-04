@@ -1,0 +1,21 @@
+<article>
+<h1>投稿された画像一覧</h1>
+
+<ul class="postedImageList">
+    <% files.forEach(function (name) { %>
+        <li><img src="/post-img/<%- name %>" width="100" /></li>
+    <% }); %>
+</ul>
+</article>
+
+<script>
+(function (win, doc) {
+ 
+    'use strict';
+
+    setTimeout(function () {
+
+        location.refresh;
+    }, 10 * 1000);
+}(window, document));
+</script>

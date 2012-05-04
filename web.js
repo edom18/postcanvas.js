@@ -1,7 +1,6 @@
 var express = require('express'),
     fs = require('fs'),
-    qs = require('querystring'),
-    PORT = process.env.PORT || 8888,
+    PORT = process.env.PORT || 9500,
     app;
 
 app = express.createServer(
@@ -20,10 +19,22 @@ app.configure(function () {
     app.set('view engine', 'ejs');
 });
 
+//when be accessed to document root.
 app.get('/', function (req, res) {
     
     res.render('index', {
         title: 'Post a image by canvas'
+    });
+});
+
+//when be accessed to '/viewer'.
+app.get('/viewer', function (req, res) {
+
+    var files = fs.readdirSync(__dirname + '/public/post-img');
+
+    res.render('viewer', {
+        title: 'Posted images viewer',
+        files: files
     });
 });
 
@@ -48,7 +59,7 @@ app.post('/post', function (req, res) {
 });
 
 //start listening.
-app.listen(PORT, '192.168.10.239');
+app.listen(PORT);
 
 /**
  * Trap the error on `server.js`
@@ -57,4 +68,4 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ' + err);
 });
 
-console.log('Running at 192.168.10.239');
+console.log('Running');
