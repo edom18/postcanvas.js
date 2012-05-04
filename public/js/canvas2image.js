@@ -1,29 +1,57 @@
-(function (win, doc, exports) {
+/*
+ * Canvas2Image v0.1
+ * Copyright (c) 2008 Jacob Seidelin, jseidelin@nihilogic.dk
+ * MIT License [http://www.opensource.org/licenses/mit-license.php]
+ */
 
-    'use strict';
+var Canvas2Image = (function() {
 
-    function init() {
-    
-        var cv = document.getElementById('canvas'),
-            ctx = cv.getContext('2d'),
-            cWidth = cv.width,
-            cheight = cv.height,
-            img = new Image();
+	// check if we have canvas support
+	var bHasCanvas = false;
+	var oCanvas = document.createElement("canvas");
+	if (oCanvas.getContext("2d")) {
+		bHasCanvas = true;
+	}
 
+	// no canvas, bail out.
+	if (!bHasCanvas) {
+		return {
+			saveAsBMP : function(){},
+			saveAsPNG : function(){},
+			saveAsJPEG : function(){}
+		}
+	}
 
-        img.src = 'HTML5_Logo_256.png';
-        img.onload = function () {
+	var bHasImageData = !!(oCanvas.getContext("2d").getImageData);
+	var bHasDataURL = !!(oCanvas.toDataURL);
+	var bHasBase64 = !!(window.btoa);
 
-            ctx.beginPath();
-            ctx.drawImage(img, 0, 0);
-            ctx.closePath();
-        };
-    }
+	var strDownloadMime = "image/octet-stream";
 
+	// ok, we're good
+	var readCanvasData = function(oCanvas) {
+		var iWidth = parseInt(oCanvas.width);
+		var iHeight = parseInt(oCanvas.height);
+		return oCanvas.getContext("2d").getImageData(0,0,iWidth,iHeight);
+	}
 
-    ////////////////////////////////////////////////////////////////
+	// base64 encodes either a string or an array of charcodes
+	var encodeData = function(data) {
+		var strData = "";
+		if (typeof data == "string") {
+			strData = data;
+		} else {
+			var aData = data;
+			for (var i = 0; i < aData.length; i++) {
+				strData += String.fromCharCode(aData[i]);
+			}
+		}
+		return btoa(strData);
+	}
 
-    function createBMP(oData) {
+	// creates a base64 encoded string containing BMP data
+	// takes an imagedata object as argument
+	var createBMP = function(oData) {
 		var aHeader = [];
 	
 		var iWidth = oData.width;
@@ -100,7 +128,8 @@
 			}
 
 			for (var c = 0; c < iPadding; c++) {
-				strPixelRow += String.fromCharCode(0);
+				//strPixelRow += String.fromCharCode(0);
+				strPixelRow += String.fromCharCode(255);
 			}
 
 			strPixelData += strPixelRow;
@@ -111,48 +140,24 @@
 		return strEncoded;
 	}
 
-    function encodeData(data) {
-    
-        var strData = '',
-            aData;
 
-        if (typeof data === 'string') {
-            strData = data;
-        }
-        else {
-            aData = data;
-            for (var i = 0, l = aData.length; i < l; i++) {
-                strData += String.fromCharCode(aData[i]);
-            }
-        }
-
-        return btoa(strData);
-    }
-
-	function readCanvasData(oCanvas) {
-
-		var iWidth = parseInt(oCanvas.width),
-            iHeight = parseInt(oCanvas.height);
-
-		return oCanvas.getContext('2d').getImageData(0, 0, iWidth, iHeight);
+	// sends the generated file to the client
+	var saveFile = function(strData) {
+		document.location.href = strData;
 	}
 
-	function makeDataURI(strData, strMime) {
-
-		return 'data:' + strMime + ';base64,' + strData;
+	var makeDataURI = function(strData, strMime) {
+		return "data:" + strMime + ";base64," + strData;
 	}
 
-	function makeImageObject(strSource) {
-
-		var oImgElement = document.createElement('img');
-
+	// generates a <img> object containing the imagedata
+	var makeImageObject = function(strSource) {
+		var oImgElement = document.createElement("img");
 		oImgElement.src = strSource;
-
 		return oImgElement;
 	}
-    
-    function scaleCanvas(oCanvas, iWidth, iHeight) {
 
+	var scaleCanvas = function(oCanvas, iWidth, iHeight) {
 		if (iWidth && iHeight) {
 			var oSaveCanvas = document.createElement("canvas");
 			oSaveCanvas.width = iWidth;
@@ -165,28 +170,64 @@
 			oSaveCtx.drawImage(oCanvas, 0, 0, oCanvas.width, oCanvas.height, 0, 0, iWidth, iHeight);
 			return oSaveCanvas;
 		}
-
 		return oCanvas;
 	}
 
-    /////////////////////////////////////////////////////////////////////////
+	return {
 
-    init();
+		saveAsPNG : function(oCanvas, bReturnImg, iWidth, iHeight) {
+			if (!bHasDataURL) {
+				return false;
+			}
+			var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight);
+			var strData = oScaledCanvas.toDataURL("image/png");
+			if (bReturnImg) {
+				return makeImageObject(strData);
+			} else {
+				saveFile(strData.replace("image/png", strDownloadMime));
+			}
+			return true;
+		},
 
-    var cv  = document.getElementById('canvas'),
-        cWidth = cv.width,
-        cHeight = cv.height,
-        oScaledCanvas = scaleCanvas(cv, 100, 100),
-        ocv = readCanvasData(oScaledCanvas);
+		saveAsJPEG : function(oCanvas, bReturnImg, iWidth, iHeight) {
+			if (!bHasDataURL) {
+				return false;
+			}
 
-    var strImgData = createBMP(ocv);
-    var img = makeImageObject(makeDataURI(strImgData, "image/bmp"));
+			var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight);
+			var strMime = "image/jpeg";
+			var strData = oScaledCanvas.toDataURL(strMime);
+	
+			// check if browser actually supports jpeg by looking for the mime type in the data uri.
+			// if not, return false
+			if (strData.indexOf(strMime) != 5) {
+				return false;
+			}
 
-    doc.body.appendChild(img);
+			if (bReturnImg) {
+				return makeImageObject(strData);
+			} else {
+				saveFile(strData.replace(strMime, strDownloadMime));
+			}
+			return true;
+		},
 
-    /* -----------------------------------------------------
-       EXPORT
-    -------------------------------------------------------- */
-    exports.createBMP = createBMP;
+		saveAsBMP : function(oCanvas, bReturnImg, iWidth, iHeight) {
+			if (!(bHasImageData && bHasBase64)) {
+				return false;
+			}
 
-}(window, document, window));
+			var oScaledCanvas = scaleCanvas(oCanvas, iWidth, iHeight);
+
+			var oData = readCanvasData(oScaledCanvas);
+			var strImgData = createBMP(oData);
+			if (bReturnImg) {
+				return makeImageObject(makeDataURI(strImgData, "image/bmp"));
+			} else {
+				saveFile(makeDataURI(strImgData, strDownloadMime));
+			}
+			return true;
+		}
+	};
+
+})();
