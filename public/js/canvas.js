@@ -21,7 +21,6 @@
         cHeight = 0,
         cvRect;
 
-console.log(ua);
     /**
      * send a image from canvas.
      */
@@ -34,7 +33,6 @@ console.log(ua);
             uri = cv.toDataURL();
         }
         else {
-            alert('hoge');
             uri = (Canvas2Image.saveAsBMP(cv, true, cWidth, cHeight)).src;
         }
 
