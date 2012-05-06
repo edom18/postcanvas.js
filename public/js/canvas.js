@@ -30,7 +30,8 @@
             data = {};
 
         if (!isAndroid && cv.toDataURL) {
-            uri = cv.toDataURL();
+            uri = (Canvas2Image.saveAsBMP(cv, true, cWidth, cHeight)).src;
+            //uri = cv.toDataURL();
         }
         else {
             uri = (Canvas2Image.saveAsBMP(cv, true, cWidth, cHeight)).src;

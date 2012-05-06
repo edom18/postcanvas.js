@@ -1,7 +1,39 @@
 var express = require('express'),
+    im = require('imagemagick'),
     fs = require('fs'),
     PORT = process.env.PORT || 9500,
     app;
+
+/////////////////////////////////////////////////////////
+
+/**
+ * Chain callbacks.
+ * @param {Function[]} [No arguments name] Call function objects as chain method.
+ * @return undefined
+ * @example
+ *   chain(function (next) {... next(); }, function (next) {... next(); }, function (next) {... next(); }...);
+ *       -> next is callback.
+ */
+function chain() {
+
+    var actors = Array.prototype.slice.call(arguments);
+
+    function next() {
+
+        var actor = actors.shift(),
+            arg = Array.prototype.slice.call(arguments);
+
+        //push `next` method to argumetns to last.
+        arg.push(next);
+
+        //when `actor` is function, call it.
+        (Object.prototype.toString.call(actor) === '[object Function]') && actor.apply(actor, arg);
+    }
+
+    next();
+}
+
+///////////////////////////////////////////////////////////
 
 app = express.createServer(
     express.bodyParser(),
@@ -43,19 +75,37 @@ app.post('/post', function (req, res) {
     var data = req.body.imageData,
         time = +new Date(),
         fileEx = data.match(/data:image\/(.*);base64,/)[1],
-        imgData = new Buffer(data.replace(/data:image\/.*;base64,/g, ''), 'base64');
+        imgData = new Buffer(data.replace(/data:image\/.*;base64,/g, ''), 'base64'),
+        filePath = __dirname + '/public/post-img/' + time,
+        tmpFilePath = __dirname + '/temp/' + time;
 
-    fs.writeFile(__dirname + '/public/post-img/' + time + '.' + fileEx, imgData, function (err) {
+    if (fileEx === 'bmp') {
+        chain(
+            function (next) {
 
-        if (err) {
-            console.log(err);
-            return false;
-        }
+                fs.writeFile(tmpFilePath + '.bmp', imgData, next);
+            },
+            function (err, next) {
+            
+                im.convert([tmpFilePath + '.bmp', filePath + '.png'], function (err, metaData) {
 
-        res.end('saved!');
-    });
+                    if (err) {
+                        throw err;
+                    }
+                });
+            }
+        );
+    }
+    else {
+        fs.writeFile(filePath + '.' + fileEx, imgData, function (err) {
+
+            if (err) {
+                throw err;
+            }
+        });
+    }
     
-    res.end(__dirname + '/public/post-img/' + 'test.' + fileEx);
+    res.end('post to avairrable');
 });
 
 //start listening.
