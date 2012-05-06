@@ -27,30 +27,22 @@
     function sendImage(e) {
         
         var uri = '',
-            pxData,
             data = {};
 
         if (!isAndroid && cv.toDataURL) {
-            pxData = ctx.getImageData(0, 0, cWidth, cHeight);
             uri = cv.toDataURL();
         }
         else {
-            pxData = ctx.getImageData(0, 0, cWidth, cHeight);
             uri = (Canvas2Image.saveAsBMP(cv, true, cWidth, cHeight)).src;
         }
 
-        console.log(pxData);
-        //data.imageData = uri;
-        data.pxData = pxData;
+        data.imageData = uri;
             
         $.ajax({
             url: '/post',
             type: 'post',
             data: data
         }).done(function (res) {
-
-            //output a message.
-            console.log(res);
 
             //clear the image.
             ctx.fillRect(0, 0, cWidth, cHeight);
