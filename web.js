@@ -4,6 +4,10 @@ var express = require('express'),
     PORT = process.env.PORT || 9500,
     app;
 
+if (process.env.NODE_ENV === 'production') {
+    im.convert.path = '/usr/local/bin/convert';
+}
+
 /////////////////////////////////////////////////////////
 
 /**
