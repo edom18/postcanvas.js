@@ -1,0 +1,9 @@
+{
+    "name": "post-canvas"
+  , "version": "0.0.1"
+  , "dependencies": {
+      "express": "2.5.9"
+    , "ejs": "0.7.1"
+    , "imagemagick": "0.1.2"
+  }
+}
