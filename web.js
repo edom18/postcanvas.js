@@ -89,6 +89,8 @@ app.post('/post', function (req, res) {
             
                 im.convert([tmpFilePath + '.bmp', filePath + '.png'], function (err, metaData) {
 
+                    fs.unlink(tmpFilePath + '.bmp');
+
                     if (err) {
                         throw err;
                     }
