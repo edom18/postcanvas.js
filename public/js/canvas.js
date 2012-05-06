@@ -27,16 +27,21 @@
     function sendImage(e) {
         
         var uri = '',
+            pxData,
             data = {};
 
         if (!isAndroid && cv.toDataURL) {
+            pxData = ctx.getImageData(0, 0, cWidth, cHeight);
             uri = cv.toDataURL();
         }
         else {
+            pxData = ctx.getImageData(0, 0, cWidth, cHeight);
             uri = (Canvas2Image.saveAsBMP(cv, true, cWidth, cHeight)).src;
         }
 
-        data.imageData = uri;
+        console.log(pxData);
+        //data.imageData = uri;
+        data.pxData = pxData;
             
         $.ajax({
             url: '/post',
